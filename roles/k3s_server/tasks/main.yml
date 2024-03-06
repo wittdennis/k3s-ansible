@@ -95,7 +95,7 @@
         seconds: 10
 
     - name: Check whether kubectl is installed on control node
-      ansible.builtin.command: 'kubectl'
+      ansible.builtin.command: "kubectl"
       register: kubectl_installed
       ignore_errors: true
       delegate_to: 127.0.0.1
@@ -124,8 +124,8 @@
           when: kubeconfig != "~/.kube/config"
           ansible.builtin.replace:
             path: "{{ kubeconfig }}"
-            regexp: 'name: default'
-            replace: 'name: {{ cluster_context }}'
+            regexp: "name: default"
+            replace: "name: {{ cluster_context }}"
           delegate_to: 127.0.0.1
           become: false
 
@@ -177,7 +177,6 @@
 - name: Setup kubectl for user
   when: user_kubectl
   block:
-
     - name: Create kubectl symlink
       when: lookup('fileglob', '/usr/local/bin/kubectl', errors='warn') | length == 0
       ansible.builtin.file:
@@ -200,15 +199,42 @@
         owner: "{{ ansible_user }}"
         mode: "u=rw,g=,o="
 
+    - name: Check for bashrc
+      ansible.builtin.stat:
+        path: ~{{ ansible_user }}/.bashrc
+      register: bashrc
+
     - name: Configure default KUBECONFIG for user
+      when: bashrc.stat.exists
       ansible.builtin.lineinfile:
         path: ~{{ ansible_user }}/.bashrc
-        regexp: 'export KUBECONFIG=~/.kube/config'
-        line: 'export KUBECONFIG=~/.kube/config # Added by k3s-ansible'
+        regexp: "export KUBECONFIG=~/.kube/config"
+        line: "export KUBECONFIG=~/.kube/config # Added by k3s-ansible"
         state: present
 
     - name: Configure kubectl autocomplete
+      when: bashrc.stat.exists
       ansible.builtin.lineinfile:
         path: ~{{ ansible_user }}/.bashrc
         regexp: '\.\s+<\(kubectl completion bash\)'
         line: ". <(kubectl completion bash)  # Added by k3s-ansible"
+
+    - name: Check for zshrc
+      ansible.builtin.stat:
+        path: ~{{ ansible_user }}/.zshrc
+      register: zshrc
+
+    - name: Configure default KUBECONFIG for user
+      when: zshrc.stat.exists
+      ansible.builtin.lineinfile:
+        path: ~{{ ansible_user }}/.zshrc
+        regexp: "export KUBECONFIG=~/.kube/config"
+        line: "export KUBECONFIG=~/.kube/config # Added by k3s-ansible"
+        state: present
+
+    - name: Configure kubectl autocomplete
+      when: zshrc.stat.exists
+      ansible.builtin.lineinfile:
+        path: ~{{ ansible_user }}/.zshrc
+        regexp: '\.\s+<\(kubectl completion zsh\)'
+        line: ". <(kubectl completion zsh)  # Added by k3s-ansible"
