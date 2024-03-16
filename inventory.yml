@@ -24,6 +24,14 @@ k3s_cluster:
     extra_agent_args: ""
     api_port: 6443
     user_kubectl: true
+    server_config_yaml: |
+      kube-controller-manager-arg:
+        - "bind-address=0.0.0.0"
+      kube-proxy-arg:
+        - "metrics-bind-address=0.0.0.0"
+      kube-scheduler-arg:
+        - "bind-address=0.0.0.0"
+      etcd-expose-metrics: true
 
   # Optional vars
   # k3s_server_location: /var/lib/rancher/k3s
