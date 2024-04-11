@@ -11,7 +11,7 @@ k3s_cluster:
   vars:
     ansible_port: 15998
     ansible_user: dwitt
-    k3s_version: v1.29.2+k3s1
+    k3s_version: v1.29.3+k3s1
     token: !vault |
       $ANSIBLE_VAULT;1.1;AES256
       66313233643562393336343239626631633166323161613534393735306266653937333630393835
@@ -25,6 +25,14 @@ k3s_cluster:
     api_port: 6443
     user_kubectl: true
     server_config_yaml: |
+      tls-san:
+        - "k8s.home.derwitt.net"
+      kube-apiserver-arg:
+        - "oidc-issuer-url=https://auth.home.derwitt.net"
+        - "oidc-client-id=kubelogin"
+        - "oidc-groups-claim=groups"
+        - "oidc-username-claim=email"
+        - "oidc-ca-file=/etc/ssl/certs/ISRG_Root_X1.pem"
       kube-controller-manager-arg:
         - "bind-address=0.0.0.0"
       kube-proxy-arg:
