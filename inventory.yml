@@ -3,9 +3,11 @@ k3s_cluster:
   children:
     server:
       hosts:
-        workchops.local:
+        192.168.1.59:
     agent:
       hosts:
+        muttonchops.home.arpa:
+        mortadellachops.home.arpa:
 
   # Required Vars
   vars:
@@ -27,6 +29,7 @@ k3s_cluster:
     server_config_yaml: |
       tls-san:
         - "k8s.home.derwitt.net"
+        - "workchops.home.arpa"
       kube-apiserver-arg:
         - "oidc-issuer-url=https://auth.home.derwitt.net"
         - "oidc-client-id=kubelogin"
